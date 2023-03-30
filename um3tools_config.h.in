@@ -1,0 +1,3 @@
+// the configured options and settings for UM3_Tools
+#define UM3_Tools_VERSION_MAJOR @UM3_Tools_VERSION_MAJOR@
+#define UM3_Tools_VERSION_MINOR @UM3_Tools_VERSION_MINOR@
