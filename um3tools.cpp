@@ -6,6 +6,7 @@
 #include "ultimaker3.hpp"
 #include "music.hpp"
 #include "timelapse.hpp"
+#include "authenticator.hpp"
 
 using std::cerr;
 using std::cout;
@@ -72,6 +73,28 @@ void music(argparse::ArgumentParser parser, string id, string key)
     player.play();
 }
 
+void authenticate(argparse::ArgumentParser parser)
+{
+    auto ip = parser.get<string>("printer-address");
+    auto username = parser.get<string>("username");
+    auto out_path = parser.present("--output");
+
+    auto printer = connect_to_printer(ip);
+
+    Authenticator auth(printer);
+
+    if (auth.authorize(username, "um3tools"))
+    {
+        cout << "ID: " << auth.id << endl;
+        cout << "Key: " << auth.key << endl;
+
+        if (out_path.has_value())
+        {
+            auth.save_credentials(out_path.value());
+        }
+    }
+}
+
 int main(int argc, char *argv[])
 {
     cout << endl
@@ -81,25 +104,25 @@ int main(int argc, char *argv[])
     argparse::ArgumentParser parser("um3tools", um3tools_VERSION_MAJOR + "." + um3tools_VERSION_MINOR);
 
 
-    argparse::ArgumentParser timelapse_mode("timelapse");
-    timelapse_mode.add_description("Records a timelapse of the current print job. Requires ffmpeg to be installed.");
-    timelapse_mode.add_argument("printer-address")
+    argparse::ArgumentParser timelapse_tool("timelapse");
+    timelapse_tool.add_description("Records a timelapse of the current print job. Requires ffmpeg to be installed.");
+    timelapse_tool.add_argument("printer-address")
         .help("IP or network address of the printer.");
-    timelapse_mode.add_argument("-o", "--out-file")
+    timelapse_tool.add_argument("-o", "--out-file")
         .help("Path to timelapse video output file.")
         .metavar("PATH");
-    timelapse_mode.add_argument("-r", "--frame-rate")
+    timelapse_tool.add_argument("-r", "--frame-rate")
         .help("Frame rate of timelapse video in frames per second (integer).")
         .default_value(25)
         .scan<'i', int>()
         .metavar("RATE");
 
     
-    argparse::ArgumentParser music_mode("music");
-    music_mode.add_description("Plays a melody from a MusicXML file using the printer beep.");
-    music_mode.add_argument("printer-address")
+    argparse::ArgumentParser music_tool("music");
+    music_tool.add_description("Plays a melody from a MusicXML file using the printer beep.");
+    music_tool.add_argument("printer-address")
         .help("IP or network address of the printer.");
-    music_mode.add_argument("xml-path")
+    music_tool.add_argument("xml-path")
         .help("Path to MusicXML (uncompressed, .xml) file to play. Only the notes in the first 'part' will be played.");
 
     parser.add_argument("-c", "--credentials")
@@ -111,9 +134,21 @@ int main(int argc, char *argv[])
     parser.add_argument("-k", "--key")
         .help("Authentication key.")
         .metavar("VALUE");
+    
 
-    parser.add_subparser(timelapse_mode);
-    parser.add_subparser(music_mode);
+    argparse::ArgumentParser authenticate_tool("authenticate");
+    authenticate_tool.add_description("Generate authentication credentials for a printer. Requires physical access to the printer.");
+    authenticate_tool.add_argument("printer-address")
+        .help("IP or network address of the printer.");
+    authenticate_tool.add_argument("username")
+        .help("Username to be associated with your authentication credentials.");
+    authenticate_tool.add_argument("-o", "--output")
+        .help("Path to a file to store credentials.")
+        .metavar("PATH");
+
+    parser.add_subparser(timelapse_tool);
+    parser.add_subparser(music_tool);
+    parser.add_subparser(authenticate_tool);
 
     try
     {
@@ -126,11 +161,11 @@ int main(int argc, char *argv[])
         return 1;
     }
 
-    if (parser.is_subcommand_used(timelapse_mode))
+    if (parser.is_subcommand_used(timelapse_tool))
     {
         timelapse(parser.at<argparse::ArgumentParser>("timelapse"));
     }
-    else if (parser.is_subcommand_used(music_mode))
+    else if (parser.is_subcommand_used(music_tool))
     {
         string id, key;
         auto cred_arg = parser.present("--credentials");
@@ -155,9 +190,13 @@ int main(int argc, char *argv[])
 
         music(parser.at<argparse::ArgumentParser>("music"), id, key);
     }
+    else if (parser.is_subcommand_used(authenticate_tool))
+    {
+        authenticate(parser.at<argparse::ArgumentParser>("authenticate"));
+    }
     else
     {
-        cerr << "Invalid mode entered." << endl;
+        cerr << "Invalid tool entered." << endl;
         return 1;
     }
 

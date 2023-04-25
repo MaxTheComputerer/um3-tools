@@ -14,7 +14,6 @@ using std::string;
 
 class Ultimaker3
 {
-    const string ip_address;
     string api_base_url;
     string id;
     string key;
@@ -33,12 +32,23 @@ class Ultimaker3
         return cpr::Get(cpr::Url{api_base_url + request}, cpr::Authentication{id, key, cpr::AuthMode::DIGEST});
     }
 
-    cpr::Response post_request(const string request, const string body)
+    cpr::Response post_request_authenticated(const string request, const string body)
     {
+        if (!is_authenticated())
+        {
+            throw std::invalid_argument("You must provide authentication credentials to make this request.");
+        }
         return cpr::Post(cpr::Url{api_base_url + request}, cpr::Body{body}, cpr::Authentication{id, key, cpr::AuthMode::DIGEST}, cpr::Header{{"Content-Type", "application/json"}});
     }
 
+    cpr::Response post_request(const string request, const cpr::Payload payload)
+    {
+        return cpr::Post(cpr::Url{api_base_url + request}, payload);
+    }
+
 public:
+    const string ip_address;
+
     Ultimaker3(const string ip_address) : ip_address(ip_address)
     {
         api_base_url = "http://" + ip_address + "/api/v1";
@@ -65,7 +75,7 @@ public:
     bool beep(const double frequency, const double duration)
     {
         string body = "{\"frequency\": " + std::to_string(frequency) + ", \"duration\": " + std::to_string(duration) + "}";
-        auto result = post_request("/printer/beep", body);
+        auto result = post_request_authenticated("/printer/beep", body);
         return result.status_code == 204;
     }
 
@@ -110,6 +120,25 @@ public:
         auto text = get_request("/print_job/uuid").text;
         text.erase(remove(text.begin(), text.end(), '\"'), text.end());
         return text;
+    }
+
+    json request_authorization(string username, string application)
+    {
+        auto payload = cpr::Payload{{"application", application}, {"user", username}};
+        auto result = post_request("/auth/request", payload);
+        if (result.status_code != 200)
+        {
+            cerr << result.text << endl;
+            throw std::runtime_error("Failed to generate credentials.");
+        }
+        return json::parse(result.text);
+    }
+
+    string check_authorization_progress(string id)
+    {
+        auto result = get_request("/auth/check/" + id);
+        auto parsed = json::parse(result.text);
+        return parsed["message"];
     }
 };
 
