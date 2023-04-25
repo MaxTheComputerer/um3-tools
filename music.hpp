@@ -1,3 +1,6 @@
+#ifndef UM3_MUSIC_HEADER
+#define UM3_MUSIC_HEADER
+
 #include "ultimaker3.hpp"
 #include "mx/api/DocumentManager.h"
 #include "mx/api/ScoreData.h"
@@ -22,7 +25,7 @@ struct Note
     }
 };
 
-class MidiPlayer
+class MusicXmlPlayer
 {
     Ultimaker3 printer;
     mx::api::PartData part;
@@ -76,7 +79,7 @@ class MidiPlayer
     }
 
 public:
-    MidiPlayer(Ultimaker3 printer, std::string input_filename) : printer(printer)
+    MusicXmlPlayer(Ultimaker3 printer, std::string input_filename) : printer(printer)
     {
         if (!printer.is_authenticated())
         {
@@ -107,14 +110,19 @@ public:
     {
         const auto notes = extract_notes();
 
+        auto previous_time = notes.front().tickTimePosition;
+
         for (auto &&note : notes)
         {
+            if (note.isChord && note.tickTimePosition == previous_time)
+                continue;
+
             auto duration = get_duration(note.durationData);
 
-            if (!note.isUnpitched)
+            if (!note.isRest && !note.isUnpitched)
             {
                 auto frequency = get_frequency(note.pitchData);
-                cout << printer.beep(frequency, duration);
+                printer.beep(frequency, duration);
                 cout << "Playing note at " << frequency << "Hz for " << duration << "ms" << endl;
             }
             else
@@ -123,6 +131,9 @@ public:
             }
 
             note_sleep(duration);
+            previous_time = note.tickTimePosition;
         }
     }
 };
+
+#endif

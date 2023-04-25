@@ -1,26 +1,48 @@
 cmake_minimum_required(VERSION 3.16)
 cmake_policy(VERSION 3.9)
 
-project(UM3_Tools VERSION 0.1)
+project(um3tools VERSION 0.1)
 set(CMAKE_CXX_STANDARD 20)
 
 configure_file(um3tools_config.h.in um3tools_config.h)
 
-add_executable(UM3_Tools um3tools.cpp)
+add_executable(um3tools um3tools.cpp)
 
-target_include_directories(UM3_Tools PUBLIC "${PROJECT_BINARY_DIR}")
+target_include_directories(um3tools PUBLIC "${PROJECT_BINARY_DIR}")
 
+# CPR
 include(FetchContent)
 FetchContent_Declare(cpr GIT_REPOSITORY https://github.com/libcpr/cpr.git
                          GIT_TAG 0817715923c9705e68994eb52ef9df3f6845beba) # The commit hash for 1.10.x. Replace with the latest from: https://github.com/libcpr/cpr/releases
 FetchContent_MakeAvailable(cpr)
 
+# MX
 add_subdirectory(third-party/mx)
-target_include_directories(UM3_Tools PRIVATE mx/Sourcecode/include)
+target_include_directories(um3tools PRIVATE mx/Sourcecode/include)
 
-target_link_libraries(UM3_Tools PRIVATE
+# JSON
+FetchContent_Declare(json URL https://github.com/nlohmann/json/releases/download/v3.11.2/json.tar.xz)
+FetchContent_MakeAvailable(json)
+
+# Subprocess
+FetchContent_Declare(subprocess GIT_REPOSITORY https://github.com/arun11299/cpp-subprocess.git GIT_TAG master)
+FetchContent_MakeAvailable(subprocess)
+
+# Argparse
+FetchContent_Declare(
+    argparse
+    GIT_REPOSITORY https://github.com/p-ranav/argparse.git
+)
+FetchContent_MakeAvailable(argparse)
+
+# Linking libraries
+
+target_link_libraries(um3tools PRIVATE
     cpr::cpr
     asound
     pthread
     mx
+    nlohmann_json::nlohmann_json
+    subprocess
+    argparse
 )
