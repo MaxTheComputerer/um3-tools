@@ -91,7 +91,7 @@ class Timelapse
             "ffmpeg",
             "-hide_banner",
             "-loglevel", "error",
-            "-i", temp_dir.string() + "/" + "\%d.jpg",
+            "-i", temp_dir.string() + "/" + "%d.jpg",
             "-c:v", "libx264",
             "-crf", "18",
             "-pix_fmt", "yuv420p",
