@@ -5,10 +5,6 @@ project(um3tools VERSION 0.1)
 set(CMAKE_CXX_STANDARD 17)
 set(CPP_VERSION 17)
 
-if(WIN32) # Install dlls in the same directory as the executable on Windows
-    set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
-endif()
-
 configure_file(um3tools_config.h.in um3tools_config.h)
 
 add_executable(um3tools um3tools.cpp)
@@ -50,3 +46,19 @@ target_link_libraries(um3tools PRIVATE
     subprocess
     argparse
 )
+
+if(WIN32)
+    set(CPACK_GENERATOR "ZIP")
+else()
+    set(CPACK_GENERATOR "DEB")
+    set(CPACK_DEBIAN_PACKAGE_MAINTAINER "Max Johnson")
+endif()
+
+
+install(TARGETS um3tools DESTINATION bin)
+install(FILES $<TARGET_FILE:cpr> DESTINATION lib)
+
+set(CPACK_PACKAGE_NAME ${PROJECT_NAME})
+set(CPACK_PACKAGE_VERSION ${PROJECT_VERSION})
+set(CPACK_PACKAGE_FILE_NAME "${CPACK_PACKAGE_NAME}-${CPACK_PACKAGE_VERSION}-${CPACK_GENERATOR}")
+include(CPack)
