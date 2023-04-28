@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.16)
-cmake_policy(VERSION 3.9)
+cmake_policy(SET CMP0135 NEW)
 
 project(um3tools VERSION 0.1)
 set(CMAKE_CXX_STANDARD 17)
@@ -50,10 +50,7 @@ target_link_libraries(um3tools PRIVATE
     argparse
 )
 
-set_target_properties(${PROJECT_NAME} PROPERTIES DEBUG_POSTFIX "d")
-set(CMAKE_INSTALL_PREFIX "${CMAKE_SOURCE_DIR}/install")
-
-install(TARGETS ${PROJECT_NAME} RUNTIME DESTINATION bin)
+set_target_properties(${PROJECT_NAME} PROPERTIES DEBUG_POSTFIX "-debug")
 
 set(CPACK_PACKAGE_NAME ${PROJECT_NAME})
 set(CPACK_PACKAGE_VERSION ${PROJECT_VERSION})
@@ -64,8 +61,19 @@ if(UNIX AND NOT APPLE) # Create a .deb package for Linux
     set(CPACK_DEBIAN_PACKAGE_MAINTAINER "Max Johnson")
     set(CPACK_DEBIAN_FILE_NAME DEB-DEFAULT)
     set(CPACK_DEBIAN_PACKAGE_SHLIBDEPS YES)
+
 elseif(WIN32) # Create a zip file for Windows
     set(CPACK_GENERATOR "ZIP")
+
+    file(GLOB DLL_FILES "${PROJECT_BINARY_DIR}/${CMAKE_BUILD_TYPE}/*.dll")
+    file(GLOB EXE_FILES "${PROJECT_BINARY_DIR}/${CMAKE_BUILD_TYPE}/*.exe")
+    install(FILES ${DLL_FILES} ${EXE_FILES} DESTINATION . COMPONENT um3install)
+
+    set(CPACK_ARCHIVE_COMPONENT_INSTALL ON)
+    set(CPACK_COMPONENTS_ALL um3install)
+    set(CPACK_COMPONENTS_GROUPING ALL_COMPONENTS_IN_ONE)
+
+    set(CPACK_INCLUDE_TOPLEVEL_DIRECTORY FALSE)
 endif()
 
 include(CPack)
