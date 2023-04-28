@@ -3,8 +3,8 @@
 #include <argparse/argparse.hpp>
 
 #include "um3tools_config.h"
-#include "ultimaker3.hpp"
 #include "music.hpp"
+#include "ultimaker3.hpp"
 #include "timelapse.hpp"
 #include "authenticator.hpp"
 
@@ -49,6 +49,7 @@ void timelapse(argparse::ArgumentParser parser)
     auto printer = connect_to_printer(ip);
 
     Timelapse timelapse(printer);
+
     if (out_path.has_value())
     {
         timelapse.start(frame_rate, out_path.value());
@@ -108,7 +109,7 @@ int main(int argc, char *argv[])
     timelapse_tool.add_description("Records a timelapse of the current print job. Requires ffmpeg to be installed.");
     timelapse_tool.add_argument("printer-address")
         .help("IP or network address of the printer.");
-    timelapse_tool.add_argument("-o", "--out-file")
+    timelapse_tool.add_argument("--out-file")
         .help("Path to timelapse video output file.")
         .metavar("PATH");
     timelapse_tool.add_argument("-r", "--frame-rate")
@@ -142,7 +143,7 @@ int main(int argc, char *argv[])
         .help("IP or network address of the printer.");
     authenticate_tool.add_argument("username")
         .help("Username to be associated with your authentication credentials.");
-    authenticate_tool.add_argument("-o", "--output")
+    authenticate_tool.add_argument("--output")
         .help("Path to a file to store credentials.")
         .metavar("PATH");
 

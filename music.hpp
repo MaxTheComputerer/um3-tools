@@ -1,9 +1,9 @@
 #ifndef UM3_MUSIC_HEADER
 #define UM3_MUSIC_HEADER
 
-#include "ultimaker3.hpp"
 #include "mx/api/DocumentManager.h"
 #include "mx/api/ScoreData.h"
+#include "ultimaker3.hpp"
 #include <fstream>
 #include <iostream>
 #include <cmath>
