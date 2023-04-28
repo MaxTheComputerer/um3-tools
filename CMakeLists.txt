@@ -50,18 +50,22 @@ target_link_libraries(um3tools PRIVATE
     argparse
 )
 
-if(WIN32)
-    set(CPACK_GENERATOR "ZIP")
-else()
-    set(CPACK_GENERATOR "DEB")
-    set(CPACK_DEBIAN_PACKAGE_MAINTAINER "Max Johnson")
-endif()
+set_target_properties(${PROJECT_NAME} PROPERTIES DEBUG_POSTFIX "d")
+set(CMAKE_INSTALL_PREFIX "${CMAKE_SOURCE_DIR}/install")
 
-
-install(TARGETS um3tools DESTINATION bin)
-install(FILES $<TARGET_FILE:cpr> DESTINATION lib)
+install(TARGETS ${PROJECT_NAME} RUNTIME DESTINATION bin)
 
 set(CPACK_PACKAGE_NAME ${PROJECT_NAME})
 set(CPACK_PACKAGE_VERSION ${PROJECT_VERSION})
-set(CPACK_PACKAGE_FILE_NAME "${CPACK_PACKAGE_NAME}-${CPACK_PACKAGE_VERSION}-${CPACK_GENERATOR}")
+set(CPACK_PACKAGE_INSTALL_DIRECTORY "um3tools")
+
+if(UNIX AND NOT APPLE) # Create a .deb package for Linux
+    set(CPACK_GENERATOR "DEB")
+    set(CPACK_DEBIAN_PACKAGE_MAINTAINER "Max Johnson")
+    set(CPACK_DEBIAN_FILE_NAME DEB-DEFAULT)
+    set(CPACK_DEBIAN_PACKAGE_SHLIBDEPS YES)
+elseif(WIN32) # Create a zip file for Windows
+    set(CPACK_GENERATOR "ZIP")
+endif()
+
 include(CPack)
