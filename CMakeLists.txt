@@ -49,7 +49,7 @@ target_link_libraries(um3tools PRIVATE
     argparse
 )
 
-set_target_properties(${PROJECT_NAME} PROPERTIES DEBUG_POSTFIX "-debug")
+# Packaging
 
 set(CPACK_PACKAGE_NAME ${PROJECT_NAME})
 set(CPACK_PACKAGE_VERSION ${PROJECT_VERSION})
