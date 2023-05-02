@@ -18,6 +18,10 @@ pair<string, string> load_auth_file(string path = "auth.txt")
 {
     std::ifstream file(path);
     string id, key;
+    if (!file.good())
+    {
+        throw std::ifstream::failure("Cannot find credentials file.");
+    }
     if (!getline(file, id))
     {
         throw std::ifstream::failure("No ID in file");
@@ -67,7 +71,7 @@ void music(argparse::ArgumentParser parser, string id, string key)
     
     auto printer = connect_to_printer(ip);
 
-    auto credentials = load_auth_file("/home/max/um3-tools/auth.txt");
+    auto credentials = load_auth_file(xml_path);
     cout << "Authenticated: " << std::boolalpha << printer.authenticate(credentials.first, credentials.second) << endl;
 
     MusicXmlPlayer player(printer, xml_path);
