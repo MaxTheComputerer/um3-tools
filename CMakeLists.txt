@@ -65,12 +65,12 @@ if(UNIX AND NOT APPLE) # Create a .deb package for Linux
 
 elseif(WIN32) # Create a zip file for Windows
     set(CPACK_GENERATOR "ZIP")
+    set(CPACK_ARCHIVE_COMPONENT_INSTALL ON)
 
     file(GLOB DLL_FILES "${PROJECT_BINARY_DIR}/${CMAKE_BUILD_TYPE}/*.dll")
     file(GLOB EXE_FILES "${PROJECT_BINARY_DIR}/${CMAKE_BUILD_TYPE}/*.exe")
     install(FILES ${DLL_FILES} ${EXE_FILES} DESTINATION . COMPONENT um3install)
-
-    set(CPACK_ARCHIVE_COMPONENT_INSTALL ON)
+    
     set(CPACK_COMPONENTS_ALL um3install)
     set(CPACK_COMPONENTS_GROUPING ALL_COMPONENTS_IN_ONE)
 
