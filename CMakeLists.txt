@@ -1,5 +1,4 @@
 cmake_minimum_required(VERSION 3.16)
-cmake_policy(SET CMP0135 NEW)
 
 project(um3tools VERSION 0.1)
 set(CMAKE_CXX_STANDARD 17)
@@ -61,6 +60,8 @@ if(UNIX AND NOT APPLE) # Create a .deb package for Linux
     set(CPACK_DEBIAN_PACKAGE_MAINTAINER "Max Johnson")
     set(CPACK_DEBIAN_FILE_NAME DEB-DEFAULT)
     set(CPACK_DEBIAN_PACKAGE_SHLIBDEPS YES)
+
+    install(TARGETS ${PROJECT_NAME} RUNTIME DESTINATION bin)
 
 elseif(WIN32) # Create a zip file for Windows
     set(CPACK_GENERATOR "ZIP")
