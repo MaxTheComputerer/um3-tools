@@ -72,7 +72,7 @@ class Timelapse
 
     void create_temp_directory()
     {
-        if (!std::filesystem::create_directory(temp_dir))
+        if (!std::filesystem::create_directories(temp_dir))
         {
             throw std::runtime_error("Failed to create temporary directory.");
         }
@@ -108,9 +108,9 @@ class Timelapse
         save_snapshot(0, current_z);
         int counter = 1;
 
-        while (printer.progress() < 1)
+        while (printer.progress() < 1 && printer.status() == "printing")
         {
-            while ((current_z = get_head_z_coord()) == previous_z)
+            while ((current_z = get_head_z_coord()) == previous_z || abs(current_z - previous_z) > 1.5)
             {
                 std::this_thread::sleep_for(std::chrono::milliseconds(1000));
             }
